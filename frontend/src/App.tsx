@@ -6,12 +6,13 @@ import {
   Users,
   Key,
   FileSignature,
-  Settings,
   Search,
   ChevronRight,
   Cpu,
   Clock,
-  Book
+  Book,
+  LogOut,
+  Shield
 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import Organizations from './components/Organizations';
@@ -21,19 +22,33 @@ import SigningConfigs from './components/SigningConfigs';
 import Projects from './components/Projects';
 import AuditLogs from './components/AuditLogs';
 import Documentation from './components/Documentation';
+import CertificateAuthority from './components/CertificateAuthority';
 import { NotificationCenter, NotificationBadge } from './components/NotificationCenter';
+import { AIChatbot } from './components/AIChatbot';
+import { LoginPage } from './components/LoginPage';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import './index.css';
 
 function Sidebar() {
+  const { logout, user } = useAuth();
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-logo">
-          <img
-            src="/kt-secure-logo.png"
-            alt="KT Secure"
-            style={{ height: '28px', width: 'auto' }}
-          />
+          <div style={{
+            background: 'white',
+            borderRadius: '6px',
+            padding: '4px 8px',
+            display: 'inline-flex',
+            alignItems: 'center'
+          }}>
+            <img
+              src="/kt-secure-logo.png"
+              alt="KT Secure"
+              style={{ height: '24px', width: 'auto' }}
+            />
+          </div>
         </div>
       </div>
 
@@ -43,6 +58,7 @@ function Sidebar() {
           <NavLink to="/" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} end>
             <LayoutDashboard />
             <span>Dashboard</span>
+            <ChevronRight className="nav-arrow" />
           </NavLink>
         </div>
 
@@ -51,26 +67,36 @@ function Sidebar() {
           <NavLink to="/organizations" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Building2 />
             <span>Organizations</span>
+            <ChevronRight className="nav-arrow" />
           </NavLink>
           <NavLink to="/users" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Users />
             <span>Users</span>
+            <ChevronRight className="nav-arrow" />
           </NavLink>
           <NavLink to="/projects" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Cpu />
             <span>Projects / ECUs</span>
+            <ChevronRight className="nav-arrow" />
           </NavLink>
         </div>
 
         <div className="nav-section">
-          <div className="nav-section-title">HSM / Signing</div>
+          <div className="nav-section-title">Security</div>
           <NavLink to="/keys" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Key />
             <span>PKCS#11 Keys</span>
+            <ChevronRight className="nav-arrow" />
           </NavLink>
           <NavLink to="/signing-configs" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <FileSignature />
             <span>Signing Configs</span>
+            <ChevronRight className="nav-arrow" />
+          </NavLink>
+          <NavLink to="/certificates" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <Shield />
+            <span>Certificates</span>
+            <ChevronRight className="nav-arrow" />
           </NavLink>
         </div>
 
@@ -79,57 +105,88 @@ function Sidebar() {
           <NavLink to="/audit-logs" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Clock />
             <span>Audit Logs</span>
-          </NavLink>
-          <NavLink to="/settings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-            <Settings />
-            <span>Settings</span>
+            <ChevronRight className="nav-arrow" />
           </NavLink>
           <NavLink to="/documentation" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
             <Book />
             <span>Documentation</span>
+            <ChevronRight className="nav-arrow" />
           </NavLink>
         </div>
       </nav>
+
+      <div className="sidebar-footer">
+        <div style={{ padding: 'var(--spacing-md)', borderTop: '1px solid rgba(139, 92, 246, 0.15)' }}>
+          {user && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)', marginBottom: 'var(--spacing-sm)' }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: 'var(--radius-full)',
+                background: 'var(--color-accent-gradient)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '0.8rem',
+                fontWeight: 600
+              }}>
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'white' }}>{user.name}</div>
+                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>{user.role}</div>
+              </div>
+            </div>
+          )}
+          <button
+            onClick={logout}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-sm)',
+              padding: 'var(--spacing-sm) var(--spacing-md)',
+              background: 'rgba(239, 68, 68, 0.15)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: 'var(--radius-md)',
+              color: '#ef4444',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              fontWeight: 500
+            }}
+          >
+            <LogOut size={18} />
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </div>
     </aside>
   );
 }
 
-function Header() {
+function Header({ onNotificationClick }: { onNotificationClick: () => void }) {
   const location = useLocation();
 
   const getPageTitle = () => {
-    const path = location.pathname;
-    if (path === '/') return 'Dashboard';
-    if (path === '/organizations') return 'Organizations';
-    if (path === '/users') return 'Users';
-    if (path === '/projects') return 'Projects / ECUs';
-    if (path === '/keys') return 'PKCS#11 Keys';
-    if (path === '/signing-configs') return 'Signing Configurations';
-    if (path === '/audit-logs') return 'Audit Logs';
-    if (path === '/settings') return 'Settings';
-    if (path === '/documentation') return 'Documentation';
-    return 'KT Secure';
-  };
-
-  const getBreadcrumb = () => {
-    const path = location.pathname;
-    if (path === '/') return null;
-    return (
-      <div className="flex items-center gap-sm text-sm text-muted">
-        <span>Home</span>
-        <ChevronRight size={14} />
-        <span style={{ color: 'var(--color-text-primary)' }}>{getPageTitle()}</span>
-      </div>
-    );
+    switch (location.pathname) {
+      case '/': return 'Dashboard';
+      case '/organizations': return 'Organizations';
+      case '/users': return 'Users';
+      case '/projects': return 'Projects / ECUs';
+      case '/keys': return 'PKCS#11 Keys';
+      case '/signing-configs': return 'Signing Configurations';
+      case '/audit-logs': return 'Audit Logs';
+      case '/documentation': return 'Documentation';
+      default: return 'Dashboard';
+    }
   };
 
   return (
     <header className="header">
-      <div>
+      <div className="header-left">
         <h1 className="header-title">{getPageTitle()}</h1>
-        {getBreadcrumb()}
       </div>
-      <div className="header-actions">
+      <div className="header-right">
         <div className="search-input">
           <Search />
           <input
@@ -139,38 +196,75 @@ function Header() {
             style={{ width: '250px' }}
           />
         </div>
-        <button className="btn btn-ghost btn-icon">
-          <Bell size={20} />
-        </button>
+        <NotificationBadge onClick={onNotificationClick} />
       </div>
     </header>
   );
 }
 
+function AuthenticatedApp() {
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+
+  return (
+    <div className="app-layout">
+      <Sidebar />
+      <main className="main-content">
+        <Header onNotificationClick={() => setNotificationsOpen(true)} />
+        <div className="page-content">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/organizations" element={<Organizations />} />
+            <Route path="/users" element={<UsersPage />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/keys" element={<Keys />} />
+            <Route path="/signing-configs" element={<SigningConfigs />} />
+            <Route path="/certificates" element={<CertificateAuthority />} />
+            <Route path="/audit-logs" element={<AuditLogs />} />
+            <Route path="/documentation" element={<Documentation />} />
+          </Routes>
+        </div>
+      </main>
+      <NotificationCenter
+        isOpen={notificationsOpen}
+        onClose={() => setNotificationsOpen(false)}
+      />
+      <AIChatbot />
+    </div>
+  );
+}
+
+function AppContent() {
+  const { isAuthenticated, isLoading, login } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--color-bg-primary)'
+      }}>
+        <div className="animate-pulse">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={login} />;
+  }
+
+  return <AuthenticatedApp />;
+}
+
 function App() {
   return (
     <BrowserRouter>
-      <div className="app-layout">
-        <Sidebar />
-        <main className="main-content">
-          <Header />
-          <div className="page-content">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/organizations" element={<Organizations />} />
-              <Route path="/users" element={<UsersPage />} />
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/keys" element={<Keys />} />
-              <Route path="/signing-configs" element={<SigningConfigs />} />
-              <Route path="/audit-logs" element={<AuditLogs />} />
-              <Route path="/documentation" element={<Documentation />} />
-            </Routes>
-          </div>
-        </main>
-      </div>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </BrowserRouter>
   );
 }
 
 export default App;
-

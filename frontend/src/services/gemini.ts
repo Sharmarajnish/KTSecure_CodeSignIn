@@ -1,6 +1,6 @@
 // Gemini AI Service for KT Secure Chatbot
 
-const GEMINI_API_KEY = 'AIzaSyAuKsfkPgNyDAu4UXBHgq6CgUIMWeVWviU';
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
 const SYSTEM_PROMPT = `You are KT Secure AI, an expert assistant for the KT Secure HSM (Hardware Security Module) Code Signing Platform. You help users with:
