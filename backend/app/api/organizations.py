@@ -161,3 +161,101 @@ async def delete_organization(
     await db.commit()
     
     return {"status": "deleted"}
+
+
+@router.put("/{org_id}/approve", response_model=OrganizationResponse)
+async def approve_organization(
+    org_id: UUID,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Approve a pending organization.
+    Only super_admin and admin roles can approve organizations.
+    """
+    # TODO: Add role check when auth is integrated
+    # if current_user.role not in ["super_admin", "admin"]:
+    #     raise HTTPException(status_code=403, detail="Not authorized")
+    
+    result = await db.execute(
+        select(Organization).where(Organization.id == org_id)
+    )
+    org = result.scalar_one_or_none()
+    
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    
+    if org.status == "active":
+        raise HTTPException(status_code=400, detail="Organization is already active")
+    
+    org.status = "active"
+    await db.commit()
+    await db.refresh(org)
+    
+    # Get counts for response
+    users_count = await db.scalar(
+        select(func.count(User.id)).where(User.organization_id == org.id)
+    )
+    keys_count = await db.scalar(
+        select(func.count(Pkcs11Key.id)).where(Pkcs11Key.organization_id == org.id)
+    )
+    
+    return OrganizationResponse(
+        id=org.id,
+        name=org.name,
+        slug=org.slug,
+        admin_email=org.admin_email,
+        parent_id=org.parent_id,
+        status=org.status,
+        hsm_slot=org.hsm_slot,
+        created_at=org.created_at,
+        users_count=users_count or 0,
+        keys_count=keys_count or 0
+    )
+
+
+@router.put("/{org_id}/reject", response_model=OrganizationResponse)
+async def reject_organization(
+    org_id: UUID,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Reject a pending organization.
+    Only super_admin and admin roles can reject organizations.
+    """
+    # TODO: Add role check when auth is integrated
+    # if current_user.role not in ["super_admin", "admin"]:
+    #     raise HTTPException(status_code=403, detail="Not authorized")
+    
+    result = await db.execute(
+        select(Organization).where(Organization.id == org_id)
+    )
+    org = result.scalar_one_or_none()
+    
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    
+    org.status = "inactive"
+    await db.commit()
+    await db.refresh(org)
+    
+    # Get counts for response
+    users_count = await db.scalar(
+        select(func.count(User.id)).where(User.organization_id == org.id)
+    )
+    keys_count = await db.scalar(
+        select(func.count(Pkcs11Key.id)).where(Pkcs11Key.organization_id == org.id)
+    )
+    
+    return OrganizationResponse(
+        id=org.id,
+        name=org.name,
+        slug=org.slug,
+        admin_email=org.admin_email,
+        parent_id=org.parent_id,
+        status=org.status,
+        hsm_slot=org.hsm_slot,
+        created_at=org.created_at,
+        users_count=users_count or 0,
+        keys_count=keys_count or 0
+    )
+

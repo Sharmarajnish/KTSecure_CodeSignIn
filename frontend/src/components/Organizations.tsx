@@ -9,7 +9,9 @@ import {
     CheckCircle2,
     Clock,
     AlertCircle,
-    X
+    X,
+    Check,
+    XCircle
 } from 'lucide-react';
 import type { Organization } from '../types';
 import { api } from '../services/api';
@@ -62,6 +64,28 @@ export default function Organizations() {
             setFormData({ name: '', slug: '', adminEmail: '' });
         } catch (error) {
             console.error('Failed to create organization:', error);
+        }
+    };
+
+    const handleApproveOrganization = async (orgId: string) => {
+        try {
+            // TODO: Replace with real API call when backend is connected
+            setOrganizations(orgs =>
+                orgs.map(org => org.id === orgId ? { ...org, status: 'active' as const } : org)
+            );
+        } catch (error) {
+            console.error('Failed to approve organization:', error);
+        }
+    };
+
+    const handleRejectOrganization = async (orgId: string) => {
+        try {
+            // TODO: Replace with real API call when backend is connected
+            setOrganizations(orgs =>
+                orgs.map(org => org.id === orgId ? { ...org, status: 'inactive' as const } : org)
+            );
+        } catch (error) {
+            console.error('Failed to reject organization:', error);
         }
     };
 
@@ -168,9 +192,31 @@ export default function Organizations() {
                                         {new Date(org.createdAt).toLocaleDateString()}
                                     </td>
                                     <td>
-                                        <button className="btn btn-ghost btn-icon">
-                                            <MoreVertical size={18} />
-                                        </button>
+                                        <div className="flex items-center gap-sm">
+                                            {org.status === 'pending' && (
+                                                <>
+                                                    <button
+                                                        className="btn btn-ghost btn-icon"
+                                                        style={{ color: 'var(--color-success)' }}
+                                                        onClick={() => handleApproveOrganization(org.id)}
+                                                        title="Approve"
+                                                    >
+                                                        <Check size={18} />
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-ghost btn-icon"
+                                                        style={{ color: 'var(--color-error)' }}
+                                                        onClick={() => handleRejectOrganization(org.id)}
+                                                        title="Reject"
+                                                    >
+                                                        <XCircle size={18} />
+                                                    </button>
+                                                </>
+                                            )}
+                                            <button className="btn btn-ghost btn-icon">
+                                                <MoreVertical size={18} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
