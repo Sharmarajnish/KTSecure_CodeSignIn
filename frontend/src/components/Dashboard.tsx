@@ -124,7 +124,7 @@ export default function Dashboard() {
                 timestamp: new Date()
             };
             setChatMessages(prev => [...prev, assistantMessage]);
-        } catch (error) {
+        } catch {
             const errorMessage: ChatMessage = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',

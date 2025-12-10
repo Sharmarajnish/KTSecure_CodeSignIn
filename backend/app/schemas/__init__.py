@@ -4,7 +4,7 @@ KT Secure - Pydantic Schemas
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from uuid import UUID
-from typing import Optional, List
+from typing import Optional
 
 
 # Organization Schemas

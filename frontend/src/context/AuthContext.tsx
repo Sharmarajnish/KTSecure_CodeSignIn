@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 
 interface User {
@@ -20,56 +20,56 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        // Check for stored auth on mount
+// Initialize auth state from localStorage synchronously
+function getInitialAuthState(): { user: User | null; token: string | null } {
+    try {
         const storedToken = localStorage.getItem('token');
         const storedUser = localStorage.getItem('user');
-
         if (storedToken && storedUser) {
-            try {
-                setToken(storedToken);
-                setUser(JSON.parse(storedUser));
-            } catch {
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-            }
+            return { token: storedToken, user: JSON.parse(storedUser) };
         }
-        setIsLoading(false);
-    }, []);
-
-    const login = (newToken: string, newUser: User) => {
-        setToken(newToken);
-        setUser(newUser);
-        localStorage.setItem('token', newToken);
-        localStorage.setItem('user', JSON.stringify(newUser));
-    };
-
-    const logout = () => {
-        setToken(null);
-        setUser(null);
+    } catch {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-    };
+    }
+    return { user: null, token: null };
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+    const [authState, setAuthState] = useState(() => ({
+        ...getInitialAuthState(),
+        isLoading: false
+    }));
+
+    const login = useCallback((newToken: string, newUser: User) => {
+        localStorage.setItem('token', newToken);
+        localStorage.setItem('user', JSON.stringify(newUser));
+        setAuthState({ token: newToken, user: newUser, isLoading: false });
+    }, []);
+
+    const logout = useCallback(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setAuthState({ token: null, user: null, isLoading: false });
+    }, []);
+
+    const contextValue = useMemo(() => ({
+        user: authState.user,
+        token: authState.token,
+        isAuthenticated: !!authState.token,
+        isLoading: authState.isLoading,
+        login,
+        logout
+    }), [authState, login, logout]);
 
     return (
-        <AuthContext.Provider value={{
-            user,
-            token,
-            isAuthenticated: !!token,
-            isLoading,
-            login,
-            logout
-        }}>
+        <AuthContext.Provider value={contextValue}>
             {children}
         </AuthContext.Provider>
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
     const context = useContext(AuthContext);
     if (context === undefined) {

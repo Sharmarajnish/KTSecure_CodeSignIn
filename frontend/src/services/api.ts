@@ -15,6 +15,119 @@ function getAuthHeaders(): HeadersInit {
     return token ? { 'Authorization': `Bearer ${token}` } : {};
 }
 
+// Backend response types
+interface BackendOrganization {
+    id: string;
+    name: string;
+    slug: string;
+    status?: string;
+    admin_email?: string;
+    adminEmail?: string;
+    users_count?: number;
+    usersCount?: number;
+    keys_count?: number;
+    keysCount?: number;
+    created_at?: string;
+    createdAt?: string;
+    updated_at?: string;
+    updatedAt?: string;
+}
+
+interface BackendUser {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    organization_id?: string;
+    organizationId?: string;
+    status?: string;
+    last_login?: string | null;
+    lastLogin?: string | null;
+    created_at?: string;
+    createdAt?: string;
+}
+
+interface BackendKey {
+    id: string;
+    name: string;
+    algorithm: string;
+    organization_id?: string;
+    organizationId?: string;
+    status?: string;
+    key_handle?: string;
+    keyHandle?: string;
+    fingerprint?: string;
+    expires_at?: string | null;
+    expiresAt?: string | null;
+    created_at?: string;
+    createdAt?: string;
+    last_used?: string | null;
+    lastUsed?: string | null;
+}
+
+interface BackendSigningConfig {
+    id: string;
+    name: string;
+    description?: string;
+    key_id?: string;
+    keyId?: string;
+    key_name?: string;
+    keyName?: string;
+    hash_algorithm?: string;
+    hashAlgorithm?: string;
+    timestamp_authority?: string | null;
+    timestampUrl?: string | null;
+    organization_id?: string;
+    organizationId?: string;
+    is_enabled?: boolean;
+    isEnabled?: boolean;
+    usage_count?: number;
+    usageCount?: number;
+    created_at?: string;
+    createdAt?: string;
+    updated_at?: string;
+    updatedAt?: string;
+}
+
+interface BackendProject {
+    id: string;
+    name: string;
+    description?: string;
+    ecu_type?: string;
+    ecuType?: string;
+    organization_id?: string;
+    organizationId?: string;
+    organization_name?: string;
+    organizationName?: string;
+    linked_user_ids?: string[];
+    linkedUserIds?: string[];
+    linked_config_ids?: string[];
+    linkedConfigIds?: string[];
+    status?: string;
+    created_at?: string;
+    createdAt?: string;
+    updated_at?: string;
+    updatedAt?: string;
+}
+
+interface BackendAuditLog {
+    id: string;
+    action: string;
+    entity_type?: string;
+    entityType?: string;
+    entity_id?: string;
+    entityId?: string;
+    entity_name?: string;
+    entityName?: string;
+    user_id?: string;
+    userId?: string;
+    user_name?: string;
+    userName?: string;
+    created_at?: string;
+    timestamp?: string;
+    changes?: Record<string, unknown>;
+}
+
 async function apiRequest<T>(
     endpoint: string,
     options: RequestInit = {},
@@ -47,12 +160,12 @@ async function apiRequest<T>(
 }
 
 // Transform backend response to frontend format
-function transformOrganization(org: any): Organization {
+function transformOrganization(org: BackendOrganization): Organization {
     return {
         id: org.id,
         name: org.name,
         slug: org.slug,
-        status: org.status || 'active',
+        status: (org.status || 'active') as Organization['status'],
         adminEmail: org.admin_email || org.adminEmail || '',
         usersCount: org.users_count ?? org.usersCount ?? 0,
         keysCount: org.keys_count ?? org.keysCount ?? 0,
@@ -61,26 +174,26 @@ function transformOrganization(org: any): Organization {
     };
 }
 
-function transformUser(user: any): User {
+function transformUser(user: BackendUser): User {
     return {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
+        role: user.role as User['role'],
         organizationId: user.organization_id || user.organizationId || '',
-        status: user.status || 'active',
+        status: (user.status || 'active') as User['status'],
         lastLogin: user.last_login || user.lastLogin || null,
         createdAt: user.created_at || user.createdAt || new Date().toISOString(),
     };
 }
 
-function transformKey(key: any): Pkcs11Key {
+function transformKey(key: BackendKey): Pkcs11Key {
     return {
         id: key.id,
         name: key.name,
         algorithm: key.algorithm,
         organizationId: key.organization_id || key.organizationId || '',
-        status: key.status || 'active',
+        status: (key.status || 'active') as Pkcs11Key['status'],
         keyHandle: key.key_handle || key.keyHandle || '',
         fingerprint: key.fingerprint || '',
         expiresAt: key.expires_at || key.expiresAt || null,
@@ -89,7 +202,7 @@ function transformKey(key: any): Pkcs11Key {
     };
 }
 
-function transformSigningConfig(config: any): SigningConfig {
+function transformSigningConfig(config: BackendSigningConfig): SigningConfig {
     return {
         id: config.id,
         name: config.name,
@@ -106,7 +219,7 @@ function transformSigningConfig(config: any): SigningConfig {
     };
 }
 
-function transformProject(project: any): Project {
+function transformProject(project: BackendProject): Project {
     return {
         id: project.id,
         name: project.name,
@@ -116,17 +229,17 @@ function transformProject(project: any): Project {
         organizationName: project.organization_name || project.organizationName || '',
         linkedUserIds: project.linked_user_ids || project.linkedUserIds || [],
         linkedConfigIds: project.linked_config_ids || project.linkedConfigIds || [],
-        status: project.status || 'active',
+        status: (project.status || 'active') as Project['status'],
         createdAt: project.created_at || project.createdAt || new Date().toISOString(),
         updatedAt: project.updated_at || project.updatedAt || new Date().toISOString(),
     };
 }
 
-function transformAuditLog(log: any): AuditLog {
+function transformAuditLog(log: BackendAuditLog): AuditLog {
     return {
         id: log.id,
-        action: log.action,
-        entityType: log.entity_type || log.entityType || '',
+        action: log.action as AuditLog['action'],
+        entityType: (log.entity_type || log.entityType || '') as AuditLog['entityType'],
         entityId: log.entity_id || log.entityId || '',
         entityName: log.entity_name || log.entityName || '',
         userId: log.user_id || log.userId || '',
@@ -165,18 +278,18 @@ const mockAuditLogs: AuditLog[] = [
 ];
 
 // Local cache for created/modified items
-let localOrganizations = [...mockOrganizations];
-let localUsers = [...mockUsers];
-let localKeys = [...mockKeys];
-let localSigningConfigs = [...mockSigningConfigs];
-let localProjects = [...mockProjects];
+const localOrganizations = [...mockOrganizations];
+const localUsers = [...mockUsers];
+const localKeys = [...mockKeys];
+const localSigningConfigs = [...mockSigningConfigs];
+const localProjects = [...mockProjects];
 
 // API Service
 export const api = {
     // Organizations
     getOrganizations: async (): Promise<Organization[]> => {
         try {
-            const orgs = await apiRequest<any[]>('/api/organizations');
+            const orgs = await apiRequest<BackendOrganization[]>('/api/organizations');
             return orgs.map(transformOrganization);
         } catch {
             return localOrganizations;
@@ -185,7 +298,7 @@ export const api = {
 
     getOrganization: async (id: string): Promise<Organization | undefined> => {
         try {
-            const org = await apiRequest<any>(`/api/organizations/${id}`);
+            const org = await apiRequest<BackendOrganization>(`/api/organizations/${id}`);
             return transformOrganization(org);
         } catch {
             return localOrganizations.find(org => org.id === id);
@@ -194,7 +307,7 @@ export const api = {
 
     createOrganization: async (data: Partial<Organization>): Promise<Organization> => {
         try {
-            const org = await apiRequest<any>('/api/organizations', {
+            const org = await apiRequest<BackendOrganization>('/api/organizations', {
                 method: 'POST',
                 body: JSON.stringify({
                     name: data.name,
@@ -205,7 +318,6 @@ export const api = {
             });
             return transformOrganization(org);
         } catch {
-            // Fallback: create locally
             const newOrg: Organization = {
                 id: String(Date.now()),
                 name: data.name || '',
@@ -224,12 +336,11 @@ export const api = {
 
     approveOrganization: async (id: string): Promise<Organization> => {
         try {
-            const org = await apiRequest<any>(`/api/organizations/${id}/approve`, {
+            const org = await apiRequest<BackendOrganization>(`/api/organizations/${id}/approve`, {
                 method: 'PUT'
             });
             return transformOrganization(org);
         } catch {
-            // Fallback: update locally
             const idx = localOrganizations.findIndex(o => o.id === id);
             if (idx >= 0) {
                 localOrganizations[idx] = { ...localOrganizations[idx], status: 'active' };
@@ -241,12 +352,11 @@ export const api = {
 
     rejectOrganization: async (id: string): Promise<Organization> => {
         try {
-            const org = await apiRequest<any>(`/api/organizations/${id}/reject`, {
+            const org = await apiRequest<BackendOrganization>(`/api/organizations/${id}/reject`, {
                 method: 'PUT'
             });
             return transformOrganization(org);
         } catch {
-            // Fallback: update locally
             const idx = localOrganizations.findIndex(o => o.id === id);
             if (idx >= 0) {
                 localOrganizations[idx] = { ...localOrganizations[idx], status: 'inactive' };
@@ -262,7 +372,7 @@ export const api = {
             const endpoint = organizationId
                 ? `/api/users?organization_id=${organizationId}`
                 : '/api/users';
-            const users = await apiRequest<any[]>(endpoint);
+            const users = await apiRequest<BackendUser[]>(endpoint);
             return users.map(transformUser);
         } catch {
             return organizationId
@@ -273,7 +383,7 @@ export const api = {
 
     createUser: async (data: Partial<User>): Promise<User> => {
         try {
-            const user = await apiRequest<any>('/api/users/invite', {
+            const user = await apiRequest<BackendUser>('/api/users/invite', {
                 method: 'POST',
                 body: JSON.stringify({
                     email: data.email,
@@ -305,7 +415,7 @@ export const api = {
             const endpoint = organizationId
                 ? `/api/keys?organization_id=${organizationId}`
                 : '/api/keys';
-            const keys = await apiRequest<any[]>(endpoint);
+            const keys = await apiRequest<BackendKey[]>(endpoint);
             return keys.map(transformKey);
         } catch {
             return organizationId
@@ -316,7 +426,7 @@ export const api = {
 
     createKey: async (data: Partial<Pkcs11Key>): Promise<Pkcs11Key> => {
         try {
-            const key = await apiRequest<any>('/api/keys/generate', {
+            const key = await apiRequest<BackendKey>('/api/keys/generate', {
                 method: 'POST',
                 body: JSON.stringify({
                     name: data.name,
@@ -349,7 +459,7 @@ export const api = {
             const endpoint = organizationId
                 ? `/api/signing/configs?organization_id=${organizationId}`
                 : '/api/signing/configs';
-            const configs = await apiRequest<any[]>(endpoint);
+            const configs = await apiRequest<BackendSigningConfig[]>(endpoint);
             return configs.map(transformSigningConfig);
         } catch {
             return organizationId
@@ -360,7 +470,7 @@ export const api = {
 
     createSigningConfig: async (data: Partial<SigningConfig>): Promise<SigningConfig> => {
         try {
-            const config = await apiRequest<any>('/api/signing/configs', {
+            const config = await apiRequest<BackendSigningConfig>('/api/signing/configs', {
                 method: 'POST',
                 body: JSON.stringify({
                     name: data.name,
@@ -399,7 +509,7 @@ export const api = {
             const endpoint = organizationId
                 ? `/api/projects?organization_id=${organizationId}`
                 : '/api/projects';
-            const projects = await apiRequest<any[]>(endpoint);
+            const projects = await apiRequest<BackendProject[]>(endpoint);
             return projects.map(transformProject);
         } catch {
             return organizationId
@@ -410,7 +520,7 @@ export const api = {
 
     createProject: async (data: Partial<Project>): Promise<Project> => {
         try {
-            const project = await apiRequest<any>('/api/projects', {
+            const project = await apiRequest<BackendProject>('/api/projects', {
                 method: 'POST',
                 body: JSON.stringify({
                     name: data.name,
@@ -447,7 +557,7 @@ export const api = {
             if (filters?.entityType) params.append('entity_type', filters.entityType);
             if (filters?.userId) params.append('user_id', filters.userId);
             const query = params.toString();
-            const logs = await apiRequest<any[]>(`/api/audit${query ? `?${query}` : ''}`);
+            const logs = await apiRequest<BackendAuditLog[]>(`/api/audit${query ? `?${query}` : ''}`);
             return logs.map(transformAuditLog);
         } catch {
             let logs = mockAuditLogs;

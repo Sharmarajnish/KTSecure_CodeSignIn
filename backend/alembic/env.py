@@ -6,7 +6,7 @@ import asyncio
 
 # Import models for autogenerate
 from app.database import Base
-from app.models import Organization, User, Pkcs11Key, SigningConfig, Project, AuditLog
+from app.models import Organization, User, Pkcs11Key, SigningConfig, Project, AuditLog  # noqa: F401
 from app.config import get_settings
 
 settings = get_settings()

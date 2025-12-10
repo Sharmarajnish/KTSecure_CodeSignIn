@@ -1,8 +1,16 @@
 import { useState } from 'react';
 import { Lock, Mail, User, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
+interface AuthUser {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+    status: string;
+}
+
 interface LoginPageProps {
-    onLogin: (token: string, user: any) => void;
+    onLogin: (token: string, user: AuthUser) => void;
 }
 
 export function LoginPage({ onLogin }: LoginPageProps) {
@@ -58,9 +66,10 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             localStorage.setItem('token', data.access_token);
             localStorage.setItem('user', JSON.stringify(data.user));
             onLogin(data.access_token, data.user);
-        } catch (err: any) {
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error('Unknown error');
             // Demo mode fallback when backend unavailable
-            if (err.message === 'Failed to fetch' || err.message.includes('NetworkError')) {
+            if (error.message === 'Failed to fetch' || error.message.includes('NetworkError')) {
                 console.log('Backend unavailable, using demo mode');
                 const demoUser = {
                     id: 'demo-1',
@@ -75,7 +84,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 onLogin(demoToken, demoUser);
                 return;
             }
-            setError(err.message);
+            setError(error.message);
         } finally {
             setLoading(false);
         }

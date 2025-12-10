@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from uuid import UUID
 from typing import List, Optional
-from datetime import datetime
 
 from ..database import get_db
 from ..models import AuditLog

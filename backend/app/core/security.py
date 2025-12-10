@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from uuid import UUID
 
 from ..config import get_settings
 

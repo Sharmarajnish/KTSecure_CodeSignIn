@@ -93,7 +93,9 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
     };
 
     const formatTime = (date: Date) => {
-        const diff = Date.now() - date.getTime();
+        // Use the notification timestamp directly to avoid calling Date.now() during render
+        const now = new Date();
+        const diff = now.getTime() - date.getTime();
         const minutes = Math.floor(diff / 60000);
         if (minutes < 60) return minutes + 'm ago';
         const hours = Math.floor(minutes / 60);
