@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 
-interface ConfirmDialogProps {
+export interface ConfirmDialogProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
     title: string;
     message: string;
-    confirmText: string;
-    confirmLabel?: string;
-    variant?: 'danger' | 'warning';
+    confirmText?: string;
+    cancelText?: string;
+    type?: 'danger' | 'warning' | 'info';
+    requireTyping?: boolean;
+    typingPhrase?: string;
 }
 
 export function ConfirmDialog({
@@ -18,84 +20,182 @@ export function ConfirmDialog({
     onConfirm,
     title,
     message,
-    confirmText,
-    confirmLabel = 'Confirm',
-    variant = 'danger'
+    confirmText = 'Confirm',
+    cancelText = 'Cancel',
+    type = 'danger',
+    requireTyping = false,
+    typingPhrase
 }: ConfirmDialogProps) {
-    const [inputValue, setInputValue] = useState('');
+    const [typedValue, setTypedValue] = useState('');
+    const inputRef = useRef<HTMLInputElement>(null);
+    const phrase = typingPhrase || title;
+
+    // Focus input when dialog requires typing
+    useEffect(() => {
+        if (isOpen && requireTyping) {
+            const timer = setTimeout(() => {
+                inputRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, requireTyping]);
+
+    // Handler to reset and close
+    const handleClose = () => {
+        setTypedValue('');
+        onClose();
+    };
 
     if (!isOpen) return null;
 
-    const isValid = inputValue === confirmText;
+    const typeColors = {
+        danger: {
+            bg: 'var(--color-error-bg)',
+            border: 'var(--color-error)',
+            icon: 'var(--color-error)',
+            button: 'var(--color-error)'
+        },
+        warning: {
+            bg: 'var(--color-warning-bg)',
+            border: 'var(--color-warning)',
+            icon: 'var(--color-warning)',
+            button: 'var(--color-warning)'
+        },
+        info: {
+            bg: 'var(--color-info-bg)',
+            border: 'var(--color-info)',
+            icon: 'var(--color-info)',
+            button: 'var(--color-accent-primary)'
+        }
+    };
+
+    const colors = typeColors[type];
+    const canConfirm = !requireTyping || typedValue.toLowerCase() === phrase.toLowerCase();
 
     const handleConfirm = () => {
-        if (isValid) {
+        if (canConfirm) {
+            setTypedValue('');
             onConfirm();
-            setInputValue('');
             onClose();
         }
     };
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
-                <div className="modal-header">
-                    <div className="flex items-center gap-md">
-                        <div style={{
+        <>
+            {/* Backdrop */}
+            <div
+                style={{
+                    position: 'fixed',
+                    inset: 0,
+                    background: 'rgba(0, 0, 0, 0.5)',
+                    zIndex: 1000
+                }}
+                onClick={handleClose}
+            />
+
+            {/* Dialog */}
+            <div
+                style={{
+                    position: 'fixed',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '440px',
+                    background: 'var(--color-bg-primary)',
+                    borderRadius: 'var(--radius-xl)',
+                    boxShadow: 'var(--shadow-lg)',
+                    zIndex: 1001,
+                    overflow: 'hidden'
+                }}
+            >
+                {/* Warning Banner */}
+                <div
+                    style={{
+                        padding: 'var(--spacing-lg)',
+                        background: colors.bg,
+                        borderBottom: `1px solid ${colors.border}`,
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 'var(--spacing-md)'
+                    }}
+                >
+                    <div
+                        style={{
                             width: '40px',
                             height: '40px',
                             borderRadius: 'var(--radius-full)',
-                            background: variant === 'danger' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                            background: colors.icon,
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
-                        }}>
-                            <AlertTriangle size={20} style={{ color: variant === 'danger' ? 'var(--color-error)' : 'var(--color-warning)' }} />
-                        </div>
-                        <h2>{title}</h2>
+                            justifyContent: 'center',
+                            flexShrink: 0
+                        }}
+                    >
+                        <AlertTriangle size={20} style={{ color: 'white' }} />
                     </div>
-                    <button className="btn btn-ghost btn-icon" onClick={onClose}>
+                    <div style={{ flex: 1 }}>
+                        <h3 style={{ marginBottom: 'var(--spacing-xs)' }}>{title}</h3>
+                        <p className="text-secondary">{message}</p>
+                    </div>
+                    <button className="btn btn-ghost btn-icon" onClick={handleClose}>
                         <X size={20} />
                     </button>
                 </div>
 
-                <div style={{ padding: 'var(--spacing-lg)' }}>
-                    <p className="text-secondary" style={{ marginBottom: 'var(--spacing-lg)' }}>
-                        {message}
-                    </p>
-
-                    <div className="form-group">
-                        <label className="form-label">
-                            Type <code style={{
-                                background: 'var(--color-bg-secondary)',
-                                padding: '2px 6px',
-                                borderRadius: 'var(--radius-sm)'
-                            }}>{confirmText}</code> to confirm
-                        </label>
+                {/* Type to Confirm */}
+                {requireTyping && (
+                    <div style={{ padding: 'var(--spacing-lg)', borderBottom: '1px solid var(--color-border)' }}>
+                        <p className="text-sm" style={{ marginBottom: 'var(--spacing-sm)' }}>
+                            To confirm, type <strong>"{phrase}"</strong> below:
+                        </p>
                         <input
+                            ref={inputRef}
                             type="text"
                             className="form-input"
-                            value={inputValue}
-                            onChange={(e) => setInputValue(e.target.value)}
-                            placeholder={confirmText}
+                            placeholder={`Type "${phrase}" to confirm`}
+                            value={typedValue}
+                            onChange={(e) => setTypedValue(e.target.value)}
                             style={{
-                                borderColor: isValid ? 'var(--color-success)' : undefined
+                                borderColor: typedValue && !canConfirm ? 'var(--color-error)' : undefined
                             }}
                         />
+                        {typedValue && !canConfirm && (
+                            <p className="text-sm text-error" style={{ marginTop: 'var(--spacing-xs)' }}>
+                                The text doesn't match
+                            </p>
+                        )}
                     </div>
-                </div>
+                )}
 
-                <div className="modal-actions">
-                    <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+                {/* Actions */}
+                <div
+                    style={{
+                        padding: 'var(--spacing-lg)',
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        gap: 'var(--spacing-sm)'
+                    }}
+                >
+                    <button className="btn btn-secondary" onClick={handleClose}>
+                        {cancelText}
+                    </button>
                     <button
-                        className={`btn ${variant === 'danger' ? 'btn-danger' : 'btn-warning'}`}
+                        className="btn"
+                        style={{
+                            background: colors.button,
+                            color: 'white',
+                            opacity: canConfirm ? 1 : 0.5,
+                            cursor: canConfirm ? 'pointer' : 'not-allowed'
+                        }}
                         onClick={handleConfirm}
-                        disabled={!isValid}
+                        disabled={!canConfirm}
                     >
-                        {confirmLabel}
+                        {confirmText}
                     </button>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
+
+export default ConfirmDialog;

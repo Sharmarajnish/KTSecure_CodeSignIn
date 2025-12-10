@@ -433,7 +433,7 @@ export function KeyCeremonyWizard({ isOpen, onClose, onComplete }: KeyCeremonyWi
                             <div className="space-y-sm">
                                 <div className="flex justify-between">
                                     <span className="text-muted">Key ID:</span>
-                                    <code>key-{Date.now()}</code>
+                                    <code>key-XXXXXXXX</code>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-muted">Fingerprint:</span>
