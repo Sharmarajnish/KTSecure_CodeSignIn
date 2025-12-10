@@ -21,8 +21,8 @@ python-multipart==0.0.6
 redis==5.0.1
 aioredis==2.0.1
 
-# HSM/PKCS#11
-PyKCS11==1.5.12
+# HSM/PKCS#11 (optional - requires system dependencies: swig, libssl-dev)
+# PyKCS11==1.5.12
 
 # AI
 google-generativeai==0.3.2

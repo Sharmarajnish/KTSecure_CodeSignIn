@@ -191,7 +191,7 @@ function transformKey(key: BackendKey): Pkcs11Key {
     return {
         id: key.id,
         name: key.name,
-        algorithm: key.algorithm,
+        algorithm: key.algorithm as Pkcs11Key['algorithm'],
         organizationId: key.organization_id || key.organizationId || '',
         status: (key.status || 'active') as Pkcs11Key['status'],
         keyHandle: key.key_handle || key.keyHandle || '',
@@ -209,7 +209,7 @@ function transformSigningConfig(config: BackendSigningConfig): SigningConfig {
         description: config.description || '',
         keyId: config.key_id || config.keyId || '',
         keyName: config.key_name || config.keyName || '',
-        hashAlgorithm: config.hash_algorithm || config.hashAlgorithm || 'SHA-256',
+        hashAlgorithm: (config.hash_algorithm || config.hashAlgorithm || 'SHA-256') as SigningConfig['hashAlgorithm'],
         timestampUrl: config.timestamp_authority || config.timestampUrl || null,
         organizationId: config.organization_id || config.organizationId || '',
         isEnabled: config.is_enabled ?? config.isEnabled ?? true,
@@ -224,7 +224,7 @@ function transformProject(project: BackendProject): Project {
         id: project.id,
         name: project.name,
         description: project.description || '',
-        ecuType: project.ecu_type || project.ecuType || 'Other',
+        ecuType: (project.ecu_type || project.ecuType || 'Other') as Project['ecuType'],
         organizationId: project.organization_id || project.organizationId || '',
         organizationName: project.organization_name || project.organizationName || '',
         linkedUserIds: project.linked_user_ids || project.linkedUserIds || [],
@@ -245,7 +245,7 @@ function transformAuditLog(log: BackendAuditLog): AuditLog {
         userId: log.user_id || log.userId || '',
         userName: log.user_name || log.userName || '',
         timestamp: log.created_at || log.timestamp || new Date().toISOString(),
-        changes: log.changes || {},
+        changes: (log.changes || {}) as AuditLog['changes'],
     };
 }
 
