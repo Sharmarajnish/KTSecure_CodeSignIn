@@ -118,4 +118,6 @@ VITE_API_URL=http://localhost:8000/api
 
 ## License
 
-Proprietary - KT Secure © 2024
+Proprietary - Precogs AI © 2025
+
+Developed & conceptualized by Rajnish Sharma
