@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Send, X, Bot, Sparkles } from 'lucide-react';
+import Markdown from 'react-markdown';
 import { sendGeminiMessage, type GeminiMessage } from '../services/gemini';
 
 interface ChatMessage {
@@ -172,7 +173,21 @@ export function AIChatbot() {
                                     fontSize: '0.9rem'
                                 }}
                             >
-                                {msg.content}
+                                {msg.role === 'assistant' ? (
+                                    <Markdown
+                                        components={{
+                                            p: ({ children }) => <p style={{ margin: '0 0 0.5em 0' }}>{children}</p>,
+                                            ul: ({ children }) => <ul style={{ margin: '0.5em 0', paddingLeft: '1.2em' }}>{children}</ul>,
+                                            li: ({ children }) => <li style={{ marginBottom: '0.25em' }}>{children}</li>,
+                                            strong: ({ children }) => <strong style={{ fontWeight: 600 }}>{children}</strong>,
+                                            code: ({ children }) => <code style={{ background: 'rgba(0,0,0,0.1)', padding: '0.1em 0.3em', borderRadius: '3px', fontSize: '0.85em' }}>{children}</code>
+                                        }}
+                                    >
+                                        {msg.content}
+                                    </Markdown>
+                                ) : (
+                                    msg.content
+                                )}
                             </div>
                         ))}
                         {isTyping && (
