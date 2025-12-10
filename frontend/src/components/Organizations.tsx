@@ -69,9 +69,9 @@ export default function Organizations() {
 
     const handleApproveOrganization = async (orgId: string) => {
         try {
-            // TODO: Replace with real API call when backend is connected
+            const updatedOrg = await api.approveOrganization(orgId);
             setOrganizations(orgs =>
-                orgs.map(org => org.id === orgId ? { ...org, status: 'active' as const } : org)
+                orgs.map(org => org.id === orgId ? updatedOrg : org)
             );
         } catch (error) {
             console.error('Failed to approve organization:', error);
@@ -80,9 +80,9 @@ export default function Organizations() {
 
     const handleRejectOrganization = async (orgId: string) => {
         try {
-            // TODO: Replace with real API call when backend is connected
+            const updatedOrg = await api.rejectOrganization(orgId);
             setOrganizations(orgs =>
-                orgs.map(org => org.id === orgId ? { ...org, status: 'inactive' as const } : org)
+                orgs.map(org => org.id === orgId ? updatedOrg : org)
             );
         } catch (error) {
             console.error('Failed to reject organization:', error);
