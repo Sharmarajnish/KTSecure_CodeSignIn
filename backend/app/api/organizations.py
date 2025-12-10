@@ -5,13 +5,34 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from uuid import UUID
-from typing import List
+from typing import List, Optional
 
 from ..database import get_db
 from ..models import Organization, User, Pkcs11Key
 from ..schemas import OrganizationCreate, OrganizationUpdate, OrganizationResponse
+from .auth import get_current_active_user
 
 router = APIRouter()
+
+
+def require_admin(current_user: User = Depends(get_current_active_user)) -> User:
+    """
+    Dependency that requires the current user to be an admin or super_admin.
+    Raises 403 if user doesn't have required role.
+    """
+    if current_user.role not in ["super_admin", "admin"]:
+        raise HTTPException(
+            status_code=403, 
+            detail="Not authorized. Admin or super_admin role required."
+        )
+    return current_user
+
+
+def optional_admin(current_user: Optional[User] = None) -> Optional[User]:
+    """
+    Optional admin dependency - doesn't require auth for public endpoints.
+    """
+    return current_user
 
 
 @router.get("/", response_model=List[OrganizationResponse])
@@ -166,15 +187,14 @@ async def delete_organization(
 @router.put("/{org_id}/approve", response_model=OrganizationResponse)
 async def approve_organization(
     org_id: UUID,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin)
 ):
     """
     Approve a pending organization.
-    Only super_admin and admin roles can approve organizations.
+    Requires super_admin or admin role.
     """
-    # TODO: Add role check when auth is integrated
-    # if current_user.role not in ["super_admin", "admin"]:
-    #     raise HTTPException(status_code=403, detail="Not authorized")
+    # Role check is handled by require_admin dependency
     
     result = await db.execute(
         select(Organization).where(Organization.id == org_id)
@@ -216,15 +236,14 @@ async def approve_organization(
 @router.put("/{org_id}/reject", response_model=OrganizationResponse)
 async def reject_organization(
     org_id: UUID,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin)
 ):
     """
     Reject a pending organization.
-    Only super_admin and admin roles can reject organizations.
+    Requires super_admin or admin role.
     """
-    # TODO: Add role check when auth is integrated
-    # if current_user.role not in ["super_admin", "admin"]:
-    #     raise HTTPException(status_code=403, detail="Not authorized")
+    # Role check is handled by require_admin dependency
     
     result = await db.execute(
         select(Organization).where(Organization.id == org_id)

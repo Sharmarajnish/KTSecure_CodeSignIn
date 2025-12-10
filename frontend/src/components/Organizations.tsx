@@ -15,8 +15,12 @@ import {
 } from 'lucide-react';
 import type { Organization } from '../types';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function Organizations() {
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+
     const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -193,7 +197,7 @@ export default function Organizations() {
                                     </td>
                                     <td>
                                         <div className="flex items-center gap-sm">
-                                            {org.status === 'pending' && (
+                                            {org.status === 'pending' && isAdmin && (
                                                 <>
                                                     <button
                                                         className="btn btn-ghost btn-icon"
