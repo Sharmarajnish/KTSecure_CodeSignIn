@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from .config import get_settings
-from .api import organizations, users, keys, signing, projects, audit, auth, quorum, websocket
+from .api import organizations, users, keys, signing, projects, audit, auth, quorum, websocket, ceremony, ca
 
 settings = get_settings()
 
@@ -46,6 +46,8 @@ app.include_router(projects.router, prefix="/api/projects", tags=["Projects"])
 app.include_router(audit.router, prefix="/api/audit", tags=["Audit"])
 app.include_router(quorum.router, prefix="/api/quorum", tags=["Quorum Approvals"])
 app.include_router(websocket.router, prefix="/api/ws", tags=["WebSocket"])
+app.include_router(ceremony.router, prefix="/api/ceremony", tags=["Key Ceremony"])
+app.include_router(ca.router, prefix="/api/ca", tags=["Certificate Authority"])
 
 
 @app.get("/")
